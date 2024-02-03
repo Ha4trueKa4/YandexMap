@@ -28,3 +28,7 @@ def get_toponym_coords(toponym_name):
         ["featureMember"][0]["GeoObject"]
     toponym_coords = toponym["Point"]["pos"]
     return toponym_coords.split(" ")
+
+lon, lat = get_toponym_coords("г. Красногорск, бул. Космонавтов, 9")
+img = get_image(lon, lat, "0.002")
+img.save('img.png')
