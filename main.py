@@ -1,5 +1,6 @@
 from methods import get_image, get_toponym_coords
 import sys
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel
 
@@ -13,6 +14,7 @@ class YandexMap(QWidget):
         self.initUI()  # инициализация окна
         self.add_data()  # метод добавления данных об изображении карты
         self.change_image()  # метод смены изображения
+        self.setFocus()
 
     def initUI(self):
         self.setGeometry(SCREENX // 2 - WIDTH // 2, SCREENY // 2 - HEIGHT // 2, WIDTH, HEIGHT)
@@ -36,9 +38,9 @@ class YandexMap(QWidget):
 
     def add_data(self):
         self.views = ["map", "sat", "skl"]  # режимы показа карты
-        self.lon = "37.530887"  # долгота
-        self.lat = "55.703118"  # ширина
-        self.delta = "0.002"  # масштаб
+        self.lon = 37.530887  # долгота
+        self.lat = 55.703118  # ширина
+        self.delta = 15  # масштаб
         self.view_id = 0  # текущий режим показа карты
 
     def change_image_view(self):  # метод смены режима показа карты
@@ -47,6 +49,32 @@ class YandexMap(QWidget):
         else:
             self.view_id = 0
         self.change_image()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Left:  # перемещение центра карты влево
+            if self.lon - 360 / (2 ** (self.delta + 8)) * 600 > -180:
+                self.lon -= 360 / (2 ** (self.delta + 8)) * 600
+                self.change_image()
+        if event.key() == Qt.Key_Right:  # перемещение центра карты вправо
+            if self.lon + 360 / (2 ** (self.delta + 8)) * 600 < 180:
+                self.lon += 360 / (2 ** (self.delta + 8)) * 600
+                self.change_image()
+        if event.key() == Qt.Key_Up:  # перемещение центра карты вверх
+            if self.lat + 180 / (2 ** (self.delta + 8)) * 450 < 85:
+                self.lat += 180 / (2 ** (self.delta + 8)) * 450
+                self.change_image()
+        if event.key() == Qt.Key_Down:  # перемещение центра карты вниз
+            if self.lat - 180 / (2 ** (self.delta + 8)) * 450 > -85:
+                self.lat -= 180 / (2 ** (self.delta + 8)) * 450
+                self.change_image()
+        if event.key() == Qt.Key_PageUp:  # увеличение масштаба
+            if int(self.delta) < 20:
+                self.delta += 1
+                self.change_image()
+        if event.key() == Qt.Key_PageDown:  # уменьшение масштаба
+            if int(self.delta) > 4:
+                self.delta -= 1
+                self.change_image()
 
 
 if __name__ == '__main__':
