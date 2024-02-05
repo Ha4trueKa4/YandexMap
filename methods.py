@@ -3,19 +3,21 @@ from io import BytesIO
 from PIL import Image
 
 
-def get_image(lon, lat, delta, view="map"):
+def get_image(lon, lat, delta, view="map"):  # функция получения изображения по координатам
     req_url = f"http://static-maps.yandex.ru/1.x/"
     params = {
         "ll": ",".join((lon, lat)),
-        "spn": ",".join((delta, delta)),
-        "l": view
+        "z": delta,
+        "l": view,
+        "pt": f'{lon},{lat},pm2rdm'
     }
     response = requests.get(req_url, params=params)
+    print(response.request.url)
     stream = BytesIO(response.content)
     return Image.open(stream)
 
 
-def get_toponym_coords(toponym_name):
+def get_toponym_coords(toponym_name):  # функция получения координат по адресу
     req_url = "http://geocode-maps.yandex.ru/1.x/"
     params = {
         "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
@@ -24,11 +26,10 @@ def get_toponym_coords(toponym_name):
     }
     response = requests.get(req_url, params=params)
     json_response = response.json()
-    toponym = json_response["response"]["GeoObjectCollection"] \
-        ["featureMember"][0]["GeoObject"]
+    try:
+        toponym = json_response["response"]["GeoObjectCollection"] \
+            ["featureMember"][0]["GeoObject"]
+    except IndexError:
+        return None
     toponym_coords = toponym["Point"]["pos"]
     return toponym_coords.split(" ")
-
-lon, lat = get_toponym_coords("г. Красногорск, бул. Космонавтов, 9")
-img = get_image(lon, lat, "0.002")
-img.save('img.png')
