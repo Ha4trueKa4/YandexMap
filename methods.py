@@ -8,7 +8,8 @@ def get_image(lon, lat, delta, view="map"):
     params = {
         "ll": ",".join((str(lon), str(lat))),
         "z": str(delta),
-        "l": view
+        "l": view,
+        "pt": f'{lon},{lat},pm2rdm'
     }
     response = requests.get(req_url, params=params)
     stream = BytesIO(response.content)
@@ -24,9 +25,11 @@ def get_toponym_coords(toponym_name):
     }
     response = requests.get(req_url, params=params)
     json_response = response.json()
-    toponym = json_response["response"]["GeoObjectCollection"] \
-        ["featureMember"][0]["GeoObject"]
+    try:
+        toponym = json_response["response"]["GeoObjectCollection"] \
+            ["featureMember"][0]["GeoObject"]
+    except IndexError:
+        return None
     toponym_coords = toponym["Point"]["pos"]
     return toponym_coords.split(" ")
 
-lon, lat = get_toponym_coords("г. Красногорск, бул. Космонавтов, 9")
